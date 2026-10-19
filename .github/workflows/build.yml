@@ -8,12 +8,21 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - run: unzip -o "$(ls *.zip | sort -V | tail -n1)" -d src
+      - name: Unzip newest source zip
+        run: |
+          ZIP=$(for f in *.zip; do echo "${f##*_v} $f"; done | sort -V | tail -n1 | cut -d' ' -f2)
+          echo "Using $ZIP"
+          unzip -q -o "$ZIP" -d src
       - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: 17 }
-      - uses: gradle/actions/setup-gradle@v6
-        with: { gradle-version: 8.9 }
-      - run: gradle assembleDebug --no-daemon
+      - name: Install Gradle 8.9
+        run: |
+          U=https://services.gradle.org/distributions/gradle-8.9-bin.zip
+          curl -fsSL "$U" -o /tmp/gradle.zip
+          echo "$(curl -fsSL "$U.sha256")  /tmp/gradle.zip" | sha256sum -c -
+          unzip -q /tmp/gradle.zip -d "$HOME"
+      - name: Build
         working-directory: src
+        run: $HOME/gradle-8.9/bin/gradle assembleDebug --no-daemon --console=plain
       - uses: actions/upload-artifact@v6
         with: { name: ModDeck-apk, path: src/app/build/outputs/apk/debug/app-debug.apk }
