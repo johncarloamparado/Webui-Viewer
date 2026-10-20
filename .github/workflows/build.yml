@@ -24,5 +24,7 @@ jobs:
       - name: Build
         working-directory: src
         run: $HOME/gradle-8.9/bin/gradle assembleDebug --no-daemon --console=plain
+      - name: Rename APK
+        run: cp src/app/build/outputs/apk/debug/app-debug.apk Modora-v2.5.apk
       - uses: actions/upload-artifact@v6
-        with: { name: ModDeck-apk, path: src/app/build/outputs/apk/debug/app-debug.apk }
+        with: { name: Modora-apk, path: Modora-v2.5.apk }
